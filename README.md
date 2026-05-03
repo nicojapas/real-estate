@@ -6,7 +6,7 @@ A Next.js application for calculating real estate investment returns, net equity
 
 - Simple password-based authentication
 - Protected dashboard
-- Automatic deployment via GitHub Actions
+- Automatic deployment via Cloudflare Pages
 - Built with Next.js, TypeScript, and Tailwind CSS
 
 ## Local Development
@@ -49,38 +49,32 @@ npm run dev
 
 ## Deployment to Cloudflare Pages
 
-### Setup GitHub Secrets
+### Initial Setup
 
-Add the following secrets to your GitHub repository (Settings > Secrets and variables > Actions):
+1. Go to Cloudflare Dashboard → **Workers & Pages**
+2. Click **Create** → **Pages** tab → **Connect to Git**
+3. Select your GitHub repository: **real-estate**
+4. Configure build settings:
+   - **Production branch**: `main`
+   - **Build command**: `npm run pages:build`
+   - **Build output directory**: `.vercel/output/static`
+5. Click **Save and Deploy**
 
-1. `CLOUDFLARE_API_TOKEN` - Your Cloudflare API token with Pages permissions
-   - Go to Cloudflare Dashboard > My Profile > API Tokens
-   - Create a token with "Cloudflare Pages" permissions
+### Environment Variables
 
-2. `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
-   - Found in Cloudflare Dashboard > Overview
+After creating the project, add environment variables:
 
-3. `JWT_SECRET` - A secure random string for JWT signing
-   - Generate with: `openssl rand -base64 32`
-
-4. `ADMIN_PASSWORD` - Your login password
+1. Go to your project → **Settings** → **Environment variables**
+2. Add for **Production** (and optionally **Preview**):
+   - `JWT_SECRET` - Generate with: `openssl rand -base64 32`
+   - `ADMIN_PASSWORD` - Your login password
+3. Go to **Settings** → **Functions** → **Compatibility flags**
+4. Add `nodejs_compat` to both Production and Preview
+5. Save and redeploy
 
 ### Automatic Deployment
 
-Every push to the `main` branch will automatically deploy to Cloudflare Pages via GitHub Actions.
-
-### Manual Deployment
-
-You can also deploy manually through the Cloudflare Pages dashboard:
-
-1. Go to Cloudflare Dashboard > Pages
-2. Create a new project
-3. Connect your GitHub repository
-4. Set build settings:
-   - Framework preset: Next.js
-   - Build command: `npm run build`
-   - Build output directory: `.next`
-5. Add environment variables in Cloudflare Pages settings
+Every push to the `main` branch automatically triggers a new deployment on Cloudflare Pages.
 
 ## Project Structure
 
@@ -93,8 +87,7 @@ real-estate/
 │   └── page.tsx          # Home page (redirects to dashboard)
 ├── lib/
 │   └── auth.ts           # Authentication utilities
-├── middleware.ts         # Route protection middleware
-└── .github/workflows/    # GitHub Actions
+└── middleware.ts         # Route protection middleware
 ```
 
 ## Authentication
@@ -105,11 +98,11 @@ Default password for development: `admin123` (Change this in production!)
 
 ## Tech Stack
 
-- Next.js 15+ (App Router)
+- Next.js 15.5.2 (App Router with Edge Runtime)
 - TypeScript
 - Tailwind CSS
-- JWT (jose library)
-- Cloudflare Pages
+- JWT authentication (jose library)
+- Cloudflare Pages with `@cloudflare/next-on-pages`
 
 ## License
 
