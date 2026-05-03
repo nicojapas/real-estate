@@ -1,6 +1,6 @@
 import { PropertyInputs, BerlinDefaults, CalculatedResults, YearlyProjection, Conclusions } from './types';
 import { calculatePurchaseCosts } from './purchaseCosts';
-import { calculateMonthlyPayment, calculateTotalInterest, generateAmortizationSchedule } from './mortgage';
+import { calculateMonthlyPayment, calculateTotalInterest, generateAmortizationSchedule, generateAcceleratedAmortization } from './mortgage';
 import { calculateEffectiveRentalIncome, calculateOngoingCosts } from './rental';
 import { calculateAfADeduction, checkPersonalUseImpact, calculateTaxableRentalIncome, estimateIncomeTax } from './tax';
 
@@ -136,14 +136,30 @@ export function generateYearlyProjections(
   const downPayment = getDownPayment(inputs, propertyValue);
   const loanAmount = totalPurchasePrice - downPayment;
 
-  const amortization = generateAmortizationSchedule(
-    loanAmount,
-    inputs.interestRate,
-    inputs.loanTermYears
-  );
-
   const results = calculateAll(inputs, defaults);
-  const annualCashFlow = results.annualCashFlow;
+
+  // Calculate the monthly cash available for extra payments
+  // This is rental income minus costs (excluding mortgage payment)
+  const monthlyCashBeforeMortgage =
+    (results.netAnnualRental - results.totalAnnualCosts - results.estimatedTax) / 12;
+
+  // For accelerated repayment, use positive cash flow as extra payment
+  const extraMonthlyPayment = inputs.acceleratedRepayment && monthlyCashBeforeMortgage > results.monthlyPayment
+    ? monthlyCashBeforeMortgage - results.monthlyPayment
+    : 0;
+
+  const amortization = inputs.acceleratedRepayment && extraMonthlyPayment > 0
+    ? generateAcceleratedAmortization(
+        loanAmount,
+        inputs.interestRate,
+        inputs.loanTermYears,
+        extraMonthlyPayment
+      ).schedule
+    : generateAmortizationSchedule(
+        loanAmount,
+        inputs.interestRate,
+        inputs.loanTermYears
+      );
 
   const projections: YearlyProjection[] = [];
 
@@ -175,7 +191,15 @@ export function generateYearlyProjections(
     const appreciatedValue = propertyValue * Math.pow(1 + inputs.appreciationRate / 100, year);
     const equity = appreciatedValue - loanBalance;
 
-    cumulativeCashFlow += annualCashFlow;
+    // In accelerated mode with positive cash flow, all cash goes to loan
+    // So cumulative cash flow stays flat (we're not accumulating cash)
+    if (inputs.acceleratedRepayment && loanBalance > 0 && extraMonthlyPayment > 0) {
+      // No cash accumulation while paying down loan
+      cumulativeCashFlow = initialCashFlow;
+    } else {
+      // Normal mode or loan paid off: accumulate cash
+      cumulativeCashFlow += results.annualCashFlow;
+    }
 
     const totalReturn = equity + cumulativeCashFlow - downPayment;
 
@@ -201,7 +225,9 @@ export function calculateConclusions(
 ): Conclusions {
   const propertyValue = getPropertyValue(inputs);
   const purchaseCosts = calculatePurchaseCosts(propertyValue, defaults, inputs.includeBroker);
+  const totalPurchasePrice = propertyValue + purchaseCosts.total;
   const downPayment = getDownPayment(inputs, propertyValue);
+  const loanAmount = totalPurchasePrice - downPayment;
   const results = calculateAll(inputs, defaults);
 
   // Initial equity vs what was paid
@@ -220,6 +246,35 @@ export function calculateConclusions(
     const netPosition = p.equity + p.cumulativeCashFlow;
     return netPosition >= totalInvested;
   })?.year ?? null;
+
+  // Calculate accelerated repayment comparison
+  const monthlyCashBeforeMortgage =
+    (results.netAnnualRental - results.totalAnnualCosts - results.estimatedTax) / 12;
+  const extraMonthlyPayment = monthlyCashBeforeMortgage > results.monthlyPayment
+    ? monthlyCashBeforeMortgage - results.monthlyPayment
+    : 0;
+
+  // Standard amortization totals
+  const standardTotalInterest = results.totalInterestPaid;
+
+  // Accelerated repayment if cash flow positive
+  let acceleratedPayoffYear: number | null = null;
+  let acceleratedTotalInterest = standardTotalInterest;
+  let yearsShaved = 0;
+  let interestSaved = 0;
+
+  if (extraMonthlyPayment > 0) {
+    const accelerated = generateAcceleratedAmortization(
+      loanAmount,
+      inputs.interestRate,
+      inputs.loanTermYears,
+      extraMonthlyPayment
+    );
+    acceleratedPayoffYear = Math.ceil(accelerated.payoffMonths / 12);
+    acceleratedTotalInterest = accelerated.totalInterest;
+    yearsShaved = loanPaidOffYear - acceleratedPayoffYear;
+    interestSaved = standardTotalInterest - acceleratedTotalInterest;
+  }
 
   // Values at milestones
   const year10 = projections.find(p => p.year === 10);
@@ -245,6 +300,11 @@ export function calculateConclusions(
     loanPaidOffYear,
     cashFlowPositiveYear,
     investmentRecoveredYear,
+    acceleratedPayoffYear,
+    yearsShaved,
+    interestSaved,
+    standardTotalInterest,
+    acceleratedTotalInterest,
     equityAt10Years,
     equityAt20Years,
     totalProfitAt10Years,

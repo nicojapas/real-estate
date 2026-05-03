@@ -75,7 +75,11 @@ export function ConclusionsSection({ conclusions, results }: ConclusionsSectionP
           icon="📅"
           title="Loan Paid Off"
           value={`Year ${conclusions.loanPaidOffYear}`}
-          description="When mortgage is fully repaid"
+          description={
+            conclusions.acceleratedPayoffYear && conclusions.acceleratedPayoffYear < conclusions.loanPaidOffYear
+              ? `Or Year ${conclusions.acceleratedPayoffYear} with accelerated repayment`
+              : 'When mortgage is fully repaid'
+          }
         />
 
         <Insight
@@ -150,6 +154,46 @@ export function ConclusionsSection({ conclusions, results }: ConclusionsSectionP
                 recovery within 15 years.
               </div>
             </div>
+          </div>
+        )}
+
+        {conclusions.isPositiveCashFlow && conclusions.yearsShaved > 0 && (
+          <div className="border-t border-gray-200 pt-3 mt-3">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">
+              ⚡ Accelerated Repayment Option
+            </h4>
+            <p className="text-xs text-gray-500 mb-3">
+              If you use all positive cash flow to pay down the loan faster:
+            </p>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="bg-purple-50 p-2 rounded">
+                <div className="text-xs text-purple-600">Years Saved</div>
+                <div className="font-semibold text-purple-900">
+                  {conclusions.yearsShaved} years
+                </div>
+              </div>
+              <div className="bg-purple-50 p-2 rounded">
+                <div className="text-xs text-purple-600">Interest Saved</div>
+                <div className="font-semibold text-purple-900">
+                  {formatEur(conclusions.interestSaved)}
+                </div>
+              </div>
+              <div className="bg-gray-50 p-2 rounded">
+                <div className="text-xs text-gray-600">Standard Interest</div>
+                <div className="font-semibold text-gray-700">
+                  {formatEur(conclusions.standardTotalInterest)}
+                </div>
+              </div>
+              <div className="bg-gray-50 p-2 rounded">
+                <div className="text-xs text-gray-600">Accelerated Interest</div>
+                <div className="font-semibold text-gray-700">
+                  {formatEur(conclusions.acceleratedTotalInterest)}
+                </div>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Toggle &quot;Accelerated Repayment&quot; in Financing to see this in the charts.
+            </p>
           </div>
         )}
       </div>

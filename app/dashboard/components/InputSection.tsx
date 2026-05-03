@@ -120,6 +120,13 @@ export function InputSection({ inputs, onUpdate, onReset }: InputSectionProps) {
             onChange={(v) => onUpdate('loanTermYears', v)}
             unit=" years"
           />
+
+          <Toggle
+            label="Accelerated Repayment"
+            description="Use all cash flow to pay down loan faster"
+            checked={inputs.acceleratedRepayment}
+            onChange={(v) => onUpdate('acceleratedRepayment', v)}
+          />
         </div>
       </Card>
 

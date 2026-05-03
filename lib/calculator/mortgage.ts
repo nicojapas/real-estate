@@ -69,3 +69,62 @@ export function generateAmortizationSchedule(
 
   return schedule;
 }
+
+export interface AcceleratedResult {
+  schedule: AmortizationEntry[];
+  payoffMonths: number;
+  totalInterest: number;
+}
+
+export function generateAcceleratedAmortization(
+  principal: number,
+  annualRate: number,
+  termYears: number,
+  extraMonthlyPayment: number
+): AcceleratedResult {
+  const baseMonthlyPayment = calculateMonthlyPayment(principal, annualRate, termYears);
+  const monthlyRate = annualRate / 100 / 12;
+  let balance = principal;
+  let cumulativePrincipal = 0;
+  let cumulativeInterest = 0;
+  const schedule: AmortizationEntry[] = [];
+  let month = 0;
+
+  // Cap at original term to avoid infinite loops
+  const maxMonths = termYears * 12;
+
+  while (balance > 0.01 && month < maxMonths) {
+    month++;
+    const interestPayment = balance * monthlyRate;
+
+    // Extra payment only applies if we have positive cash flow
+    const totalPayment = Math.min(
+      baseMonthlyPayment + Math.max(0, extraMonthlyPayment),
+      balance + interestPayment // Don't overpay
+    );
+
+    const principalPayment = totalPayment - interestPayment;
+    balance -= principalPayment;
+    cumulativePrincipal += principalPayment;
+    cumulativeInterest += interestPayment;
+
+    schedule.push({
+      month,
+      year: Math.ceil(month / 12),
+      payment: totalPayment,
+      principal: principalPayment,
+      interest: interestPayment,
+      balance: Math.max(0, balance),
+      cumulativePrincipal,
+      cumulativeInterest,
+    });
+
+    if (balance <= 0.01) break;
+  }
+
+  return {
+    schedule,
+    payoffMonths: month,
+    totalInterest: cumulativeInterest,
+  };
+}

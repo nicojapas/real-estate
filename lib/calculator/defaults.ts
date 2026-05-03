@@ -35,6 +35,7 @@ export const INITIAL_INPUTS: PropertyInputs = {
 
   includeBroker: false,
   appreciationRate: 2,
+  acceleratedRepayment: false,
 };
 
 export const MARKET_RANGES: Record<string, MarketRanges> = {

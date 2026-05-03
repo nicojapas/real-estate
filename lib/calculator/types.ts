@@ -22,6 +22,9 @@ export interface PropertyInputs {
 
   // Appreciation
   appreciationRate: number;
+
+  // Repayment strategy
+  acceleratedRepayment: boolean;
 }
 
 export interface BerlinDefaults {
@@ -111,6 +114,13 @@ export interface Conclusions {
   loanPaidOffYear: number;
   cashFlowPositiveYear: number | null;
   investmentRecoveredYear: number | null;
+
+  // Accelerated repayment comparison
+  acceleratedPayoffYear: number | null;
+  yearsShaved: number;
+  interestSaved: number;
+  standardTotalInterest: number;
+  acceleratedTotalInterest: number;
 
   // Long-term projections
   equityAt10Years: number;
