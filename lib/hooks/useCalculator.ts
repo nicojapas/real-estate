@@ -5,7 +5,8 @@ import { calculateAll, generateYearlyProjections, calculateConclusions } from '.
 
 type Action =
   | { type: 'SET_INPUT'; field: keyof PropertyInputs; value: number | boolean | string }
-  | { type: 'RESET' };
+  | { type: 'RESET' }
+  | { type: 'LOAD_INPUTS'; inputs: PropertyInputs };
 
 function reducer(state: PropertyInputs, action: Action): PropertyInputs {
   switch (action.type) {
@@ -57,6 +58,8 @@ function reducer(state: PropertyInputs, action: Action): PropertyInputs {
     }
     case 'RESET':
       return INITIAL_INPUTS;
+    case 'LOAD_INPUTS':
+      return action.inputs;
     default:
       return state;
   }
@@ -91,5 +94,9 @@ export function useCalculator() {
     dispatch({ type: 'RESET' });
   }, []);
 
-  return { inputs, results, projections, conclusions, updateInput, reset };
+  const loadInputs = useCallback((inputs: PropertyInputs) => {
+    dispatch({ type: 'LOAD_INPUTS', inputs });
+  }, []);
+
+  return { inputs, results, projections, conclusions, updateInput, reset, loadInputs };
 }
