@@ -101,3 +101,24 @@ export interface MarketRanges {
   max: number;
   step: number;
 }
+
+export interface Conclusions {
+  // Initial state
+  initialEquity: number;
+  equityLostToFees: number;
+
+  // Timeline milestones
+  loanPaidOffYear: number;
+  cashFlowPositiveYear: number | null;
+  investmentRecoveredYear: number | null;
+
+  // Long-term projections
+  equityAt10Years: number;
+  equityAt20Years: number;
+  totalProfitAt10Years: number;
+  totalProfitAt20Years: number;
+
+  // Summary flags
+  isPositiveCashFlow: boolean;
+  isGoodInvestment: boolean;
+}

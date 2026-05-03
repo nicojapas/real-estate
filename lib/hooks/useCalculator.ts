@@ -1,7 +1,7 @@
 import { useReducer, useMemo, useCallback } from 'react';
-import { PropertyInputs, CalculatedResults, YearlyProjection } from '../calculator/types';
+import { PropertyInputs, CalculatedResults, YearlyProjection, Conclusions } from '../calculator/types';
 import { BERLIN_DEFAULTS, INITIAL_INPUTS } from '../calculator/defaults';
-import { calculateAll, generateYearlyProjections } from '../calculator/projections';
+import { calculateAll, generateYearlyProjections, calculateConclusions } from '../calculator/projections';
 
 type Action =
   | { type: 'SET_INPUT'; field: keyof PropertyInputs; value: number | boolean | string }
@@ -75,6 +75,11 @@ export function useCalculator() {
     [inputs]
   );
 
+  const conclusions = useMemo<Conclusions>(
+    () => calculateConclusions(inputs, BERLIN_DEFAULTS, projections),
+    [inputs, projections]
+  );
+
   const updateInput = useCallback(
     (field: keyof PropertyInputs, value: number | boolean | string) => {
       dispatch({ type: 'SET_INPUT', field, value });
@@ -86,5 +91,5 @@ export function useCalculator() {
     dispatch({ type: 'RESET' });
   }, []);
 
-  return { inputs, results, projections, updateInput, reset };
+  return { inputs, results, projections, conclusions, updateInput, reset };
 }
