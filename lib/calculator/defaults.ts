@@ -11,6 +11,7 @@ export const BERLIN_DEFAULTS: BerlinDefaults = {
   hausgeldPerSqm: 3.5,
   grundsteuerAnnual: 400,
   insuranceRate: 0.1,
+  maintenanceReserveRate: 1.0, // 1% of property value annually for repairs/replacements
 
   // Tax parameters
   afaRate: 2.0,

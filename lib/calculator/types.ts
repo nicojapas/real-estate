@@ -35,6 +35,7 @@ export interface BerlinDefaults {
   hausgeldPerSqm: number;
   grundsteuerAnnual: number;
   insuranceRate: number;
+  maintenanceReserveRate: number;
   afaRate: number;
   buildingValueRatio: number;
 }
@@ -66,6 +67,7 @@ export interface CalculatedResults {
   annualHausgeld: number;
   annualGrundsteuer: number;
   annualInsurance: number;
+  annualMaintenanceReserve: number;
   totalAnnualCosts: number;
 
   // Rental income

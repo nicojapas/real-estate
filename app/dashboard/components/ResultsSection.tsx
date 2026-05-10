@@ -104,6 +104,7 @@ export function ResultsSection({ results }: ResultsSectionProps) {
           <ResultRow label="Hausgeld" value={formatEur(results.annualHausgeld)} />
           <ResultRow label="Grundsteuer" value={formatEur(results.annualGrundsteuer)} />
           <ResultRow label="Insurance" value={formatEur(results.annualInsurance)} />
+          <ResultRow label="Maintenance Reserve (1%)" value={formatEur(results.annualMaintenanceReserve)} />
           <Divider />
           <ResultRow
             label="Total Annual Costs"

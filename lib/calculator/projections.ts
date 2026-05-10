@@ -55,7 +55,8 @@ export function calculateAll(
     propertyValue,
     defaults.hausgeldPerSqm,
     defaults.grundsteuerAnnual,
-    defaults.insuranceRate
+    defaults.insuranceRate,
+    defaults.maintenanceReserveRate
   );
 
   const afaDeduction = calculateAfADeduction(
@@ -110,6 +111,7 @@ export function calculateAll(
     annualHausgeld: ongoingCosts.annualHausgeld,
     annualGrundsteuer: ongoingCosts.annualGrundsteuer,
     annualInsurance: ongoingCosts.annualInsurance,
+    annualMaintenanceReserve: ongoingCosts.annualMaintenanceReserve,
     totalAnnualCosts: ongoingCosts.totalAnnual,
     grossAnnualRental: rentalIncome.grossAnnual,
     effectiveRentalMonths: rentalIncome.effectiveMonths,

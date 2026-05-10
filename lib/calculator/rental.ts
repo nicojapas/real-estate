@@ -22,21 +22,25 @@ export function calculateOngoingCosts(
   propertyValue: number,
   hausgeldPerSqm: number,
   grundsteuerAnnual: number,
-  insuranceRate: number
+  insuranceRate: number,
+  maintenanceReserveRate: number
 ): {
   annualHausgeld: number;
   annualGrundsteuer: number;
   annualInsurance: number;
+  annualMaintenanceReserve: number;
   totalAnnual: number;
 } {
   const annualHausgeld = squareMeters * hausgeldPerSqm * 12;
   const annualGrundsteuer = grundsteuerAnnual;
   const annualInsurance = propertyValue * (insuranceRate / 100);
+  const annualMaintenanceReserve = propertyValue * (maintenanceReserveRate / 100);
 
   return {
     annualHausgeld,
     annualGrundsteuer,
     annualInsurance,
-    totalAnnual: annualHausgeld + annualGrundsteuer + annualInsurance,
+    annualMaintenanceReserve,
+    totalAnnual: annualHausgeld + annualGrundsteuer + annualInsurance + annualMaintenanceReserve,
   };
 }
